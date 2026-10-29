@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIDNIGHT RADIO</title>
+
+<style>
+:root {
+  --amber: #e5b56c;
+  --cream: #f6dfb0;
+  --dark: #11100e;
+  --muted: #a99b84;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--dark);
+  color: var(--cream);
+  font-family: "Courier New", monospace;
+  overflow-x: hidden;
+}
+
+.background-video {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -3;
+  background: #080909;
+}
+
+.background-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.72)),
+    radial-gradient(ellipse at center, transparent 10%, rgba(0,0,0,.6) 100%);
+}
+
+.page {
+  min-height: 100vh;
+  padding: 35px 18px 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.brand {
+  text-align: center;
+  margin: 14px 0 30px;
+  text-shadow: 0 0 20px rgba(229,181,108,.3);
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: clamp(2rem, 7vw, 4.5rem);
+  letter-spacing: .16em;
+  font-weight: 400;
+}
+
+.brand p {
+  color: var(--amber);
+  font-size: 11px;
+  letter-spacing: .32em;
+  margin-top: 12px;
+}
+
+.radio {
+  width: min(100%, 460px);
+  padding: clamp(12px, 2.5vw, 20px);
+  background: linear-gradient(145deg, #29251f, #11110f 65%, #28221a);
+  border: 1px solid #6c5639;
+  border-radius: 9px;
+  box-shadow: 0 20px 80px #000b, inset 0 0 0 4px #171512;
+}
+
+.radio-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #4c3c29;
+  padding-bottom: 14px;
+  color: var(--amber);
+  font-size: 10px;
+  letter-spacing: .16em;
+}
+
+.power-light {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: #e4ad61;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #e4ad61;
+  margin-right: 7px;
+}
+
+.display {
+  margin: 12px 0;
+  min-height: 105px;
+  padding: 12px 10px;
+  border: 1px solid #59462d;
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,.015) 0px,
+      rgba(255,255,255,.015) 1px,
+      transparent 2px,
+      transparent 4px
+    ),
+    #171a14;
+  box-shadow: inset 0 0 30px #000;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.display-label {
+  color: #a68b60;
+  font-size: 10px;
+  letter-spacing: .24em;
+}
+
+.track-title {
+  color: var(--cream);
+  font-size: clamp(15px, 3vw, 21px);
+  margin: 8px 0 4px;
+  text-shadow: 0 0 16px #dba75455;
+  overflow-wrap: anywhere;
+}
+
+.track-artist {
+  color: #bba77f;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.station-name {
+  color: var(--amber);
+  font-size: 9px;
+  letter-spacing: .14em;
+  margin-top: 8px;
+}
+
+.status {
+  color: #a69b86;
+  font-size: 10px;
+  margin-top: 9px;
+  min-height: 12px;
+}
+
+.stations-label {
+  color: #a58b65;
+  font-size: 9px;
+  letter-spacing: .15em;
+  margin: 14px 0 7px;
+}
+
+.stations {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.station {
+  border: 1px solid #55432d;
+  background: #1a1814;
+  color: #b5a17e;
+  padding: 8px 3px;
+  cursor: pointer;
+  font: inherit;
+  font-size: clamp(8px, 1.8vw, 10px);
+  letter-spacing: .03em;
+  min-height: 46px;
+  transition: .2s;
+  overflow-wrap: anywhere;
+}
+
+.station:hover,
+.station.active {
+  color: #1a130b;
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 3vw, 24px);
+  margin: 14px 0 10px;
+}
+
+.control {
+  color: var(--cream);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 5px;
+}
+
+.control:hover {
+  color: var(--amber);
+}
+
+.control.main {
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--amber);
+  border-radius: 50%;
+  font-size: 26px;
+  color: var(--amber);
+}
+
+.control.main:hover {
+  background: #e5b56c18;
+}
+
+.timeline {
+  display: grid;
+  grid-template-columns: 38px 1fr 38px;
+  align-items: center;
+  gap: 10px;
+  color: #b5a17e;
+  font-size: 10px;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--amber);
+  cursor: pointer;
+}
+
+.volume-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 160px;
+  margin: 12px auto 0;
+  color: #b5a17e;
+  font-size: 11px;
+}
+
+.volume-row input {
+  min-width: 0;
+}
+
+.bottom-line {
+  border-top: 1px solid #4c3c29;
+  margin-top: 14px;
+  padding-top: 9px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #89785e;
+  font-size: 9px;
+  letter-spacing: .08em;
+}
+
+.footer {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: .16em;
+  color: #d4c5a8;
+  text-shadow: 0 2px 8px black;
+}
+
+audio {
+  display: none;
+}
+
+@media (max-width: 420px) {
+  .page {
+    padding: 24px 12px 35px;
+  }
+
+  .radio {
+    width: min(100%, 420px);
+    padding: 12px 10px;
+  }
+
+  .display {
+    padding: 10px 6px;
+    min-height: 95px;
+    margin: 10px 0;
+  }
+
+  .stations {
+    gap: 4px;
+  }
+
+  .station {
+    padding: 7px 2px;
+    min-height: 36px;
+    letter-spacing: -.04em;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Vídeo de fons -->
+<video class="background-video" autoplay muted loop playsinline>
+  <source src="volvo-night.mp4" type="video/mp4">
+</video>
+<div class="background-overlay"></div>
+
+<main class="page">
+
+  <header class="brand">
+    <h1>MIDNIGHT</h1>
+    <h1>RADIO</h1>
+    <p>.CINC EMISSORES. UNA NIT A LA CARRETERA.</p>
+  </header>
+
+  <section class="radio" aria-label="Reproductor MIDNIGHT RADIO">
+
+    <div class="radio-top">
+      <span><span class="power-light"></span>POWER ON</span>
+      <span>STEREO ·  FM</span>
+    </div>
+
+    <section class="display" aria-live="polite">
+      <div class="display-label">SONANT</div>
+      <div class="track-title" id="trackTitle">Welcome to the night</div>
+      <div class="track-artist" id="trackArtist">MIDNIGHT RADIO</div>
+      <div class="station-name" id="stationName">NIGHT DRIVE FM 88.7</div>
+      <div class="status" id="status">Prem PLAY per començar</div>
+    </section>
+
+    <div class="stations-label">SELECCIONA EMISSORA</div>
+
+    <div class="stations">
+      <button class="station active" data-station="0">NIGHT DRIVE FM 88.7</button>
+      <button class="station" data-station="1">CHILL DREAMS FM 89.6</button>
+      <button class="station" data-station="2">AFTER HOURS FM 90.5</button>
+      <button class="station" data-station="3">DEEP SOUL FM 92.2</button>
+      <button class="station" data-station="4">NEON LIGHTS FM 95.5</button>
+    </div>
+
+    <div class="controls">
+      <button class="control" id="previousBtn" aria-label="Cançó anterior">|◀</button>
+      <button class="control main" id="playBtn" aria-label="Reproduir">▶</button>
+      <button class="control" id="nextBtn" aria-label="Cançó següent">▶|</button>
+    </div>
+
+    <div class="timeline">
+      <span id="currentTime">0:00</span>
+      <input id="seekBar" type="range" min="0" max="100" value="0"
+             step="0.1" aria-label="Posició de la cançó">
+      <span id="duration">0:00</span>
+    </div>
+
+    <div class="volume-row">
+      <span>VOL</span>
+      <input id="volumeBar" type="range" min="0" max="1"
+             value="0.75" step="0.01" aria-label="Volum">
+    </div>
+
+    <div class="bottom-line">
+      <span>HIGH QUALITY</span>
+      <span>DREAM WITHOUT END</span>
+    </div>
+
+  </section>
+
+  <footer class="footer">
+    SENSE PRESSA. GAUDEIX DEL CAMÍ.
+  </footer>
+
+</main>
+
+<audio id="audioPlayer" preload="metadata"></audio>
+
+<script>
+/*
+  EDITA LES CANÇONS AQUÍ.
+
+  Cada cançó té:
+  - title: títol que apareix a la pantalla
+  - artist: artista que apareix a la pantalla
+  - src: ubicació del fitxer MP3 dins de la carpeta music
+*/
+
+const stations = [
+  {
+    name: "NIGHT DRIVE FM",
+    tracks: [
+      {
+        title: "Something About Us",
+        artist: "Daft Punk",
+        src: "music/night-drive-01.mp3"
+      },
+      {
+        title: "Just Can't Wait",
+        artist: "Kokoroko",
+        src: "music/night-drive-02.mp3"
+      },
+      {
+        title: "Real Slow",
+        artist: "Miami Horror",
+        src: "music/night-drive-03.mp3"
+      },
+      {
+        title: "Leo",
+        artist: "Dreamcast & Sasac",
+        src: "music/night-drive-04.mp3"
+      },
+      {
+        title: "If U Got It",
+        artist: "Chris Malinchak",
+        src: "music/night-drive-05.mp3"
+      }
+    ]
+  },
+  {
+    name: "CHILL DREAMS FM",
+    tracks: [
+      {
+        title: "like we were the last two people on earth",
+        artist: "dj poolboi",
+        src: "music/chill-dreams-01.mp3"
+      },
+      {
+        title: "You & Me",
+        artist: "Meute",
+        src: "music/chill-dreams-02.mp3"
+      },
+      {
+        title: "My Foolish Mind",
+        artist: "Besso",
+        src: "music/chill-dreams-03.mp3"
+      },
+      {
+        title: "soulprint",
+        artist: "Loom room",
+        src: "music/chill-dreams-04.mp3"
+      },
+      {
+        title: "The Final View",
+        artist: "Nujabes",
+        src: "music/chill-dreams-05.mp3"
+      },
+
+    ]
+  },
+  {
+    name: "AFTER HOURS FM",
+    tracks: [
+      {
+        title: "Kiss of Life",
+        artist: "Sade",
+        src: "music/after-hours-01.mp3"
+      },
+      {
+        title: "Cumbia Sobre el Mar",
+        artist: "Quantic",
+        src: "music/after-hours-02.mp3"
+      },
+      {
+        title: "Year of the Cat",
+        artist: "Al Stewart",
+        src: "music/after-hours-03.mp3"
+      },
+      {
+        title: "Cattedrali d'emozione",
+        artist: "Pino d'Angio",
+        src: "music/after-hours-04.mp3"
+      },
+      {
+        title: "Sunrise",
+        artist: "Simply Red",
+        src: "music/after-hours-05.mp3"
+      }
+    ]
+  },
+  {
+    name: "DEEP SOUL FM",
+    tracks: [
+      {
+        title: "You and I",
+        artist: "Delegationn",
+        src: "music/retro-wave-01.mp3"
+      },
+      {
+        title: "Just the Two of Us",
+        artist: "Grover Washington Jr feat. Bill Withers",
+        src: "music/retro-wave-02.mp3"
+      },
+      {
+        title: "Let's Stay Together",
+        artist: "Al Green",
+        src: "music/retro-wave-03.mp3"
+      },
+      {
+        title: "Can't Get Enough Of Your Love, Babe",
+        artist: "Barry White",
+        src: "music/retro-wave-04.mp3"
+      },
+      {
+        title: "I Love You Baby",
+        artist: "Frankie Valli and the Four Seasons",
+        src: "music/retro-wave-05.mp3"
+      },
+
+    ]
+  },
+  {
+    name: "NEON LIGHTS FM",
+    tracks: [
+      {
+        title: "La Isla Bonita",
+        artist: "Madonna",
+        src: "music/neon-lights-01.mp3"
+      },
+      {
+        title: "[It Goes Like] Nanana",
+        artist: "Peggy Gou",
+        src: "music/neon-lights-02.mp3"
+      },
+      {
+        title: "Lady (Hear Me Tonight)",
+        artist: "Modjo",
+        src: "music/neon-lights-03.mp3"
+      },
+      {
+        title: "A Gira",
+        artist: "Trio Ternura",
+        src: "music/neon-lights-04.mp3"
+      },
+      {
+        title: "I'll Be Good",
+        artist: "Rene & Angela",
+        src: "music/neon-lights-05.mp3"
+      }
+    ]
+  }
+];
+
+const audio = document.getElementById("audioPlayer");
+const titleEl = document.getElementById("trackTitle");
+const artistEl = document.getElementById("trackArtist");
+const stationEl = document.getElementById("stationName");
+const statusEl = document.getElementById("status");
+const playBtn = document.getElementById("playBtn");
+const seekBar = document.getElementById("seekBar");
+const currentTimeEl = document.getElementById("currentTime");
+const durationEl = document.getElementById("duration");
+const volumeBar = document.getElementById("volumeBar");
+const stationButtons = document.querySelectorAll(".station");
+
+let currentStation = 0;
+let currentTrack = 0;
+let seeking = false;
+
+audio.volume = Number(volumeBar.value);
+
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+
+  const minutes = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+
+  return minutes + ":" + String(secs).padStart(2, "0");
+}
+
+function updateTrackDisplay() {
+  const station = stations[currentStation];
+  const track = station.tracks[currentTrack];
+
+  titleEl.textContent = track.title;
+  artistEl.textContent = track.artist;
+  stationEl.textContent = station.name;
+
+  stationButtons.forEach((button, index) => {
+    const selected = index === currentStation;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+function loadTrack(autoplay = false) {
+  const station = stations[currentStation];
+  const track = station.tracks[currentTrack];
+
+  updateTrackDisplay();
+
+  audio.src = track.src;
+  audio.load();
+
+  seekBar.value = 0;
+  currentTimeEl.textContent = "0:00";
+  durationEl.textContent = "0:00";
+  playBtn.textContent = "▶";
+
+  statusEl.textContent = "A punt per reproduir";
+
+  if (autoplay) {
+    playAudio();
+  }
+}
+
+async function playAudio() {
+  try {
+    await audio.play();
+    playBtn.textContent = "Ⅱ";
+    statusEl.textContent = "ON AIR · REPRODUINT";
+  } catch (error) {
+    playBtn.textContent = "▶";
+    statusEl.textContent =
+      "No s'ha pogut reproduir. Comprova el fitxer MP3.";
+  }
+}
+
+function pauseAudio() {
+  audio.pause();
+  playBtn.textContent = "▶";
+  statusEl.textContent = "PAUSA";
+}
+
+function togglePlayback() {
+  if (audio.paused) {
+    playAudio();
+  } else {
+    pauseAudio();
+  }
+}
+
+function nextTrack() {
+  const tracks = stations[currentStation].tracks;
+  currentTrack = (currentTrack + 1) % tracks.length;
+  loadTrack(true);
+}
+
+function previousTrack() {
+  if (audio.currentTime > 3) {
+    audio.currentTime = 0;
+    return;
+  }
+
+  const tracks = stations[currentStation].tracks;
+  currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
+  loadTrack(true);
+}
+
+function selectStation(index) {
+  if (index < 0 || index >= stations.length) return;
+
+  const wasPlaying = !audio.paused;
+  currentStation = index;
+  currentTrack = 0;
+
+  loadTrack(wasPlaying);
+}
+
+stationButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    selectStation(Number(button.dataset.station));
+  });
+});
+
+playBtn.addEventListener("click", togglePlayback);
+document.getElementById("nextBtn").addEventListener("click", nextTrack);
+document.getElementById("previousBtn").addEventListener("click", previousTrack);
+
+audio.addEventListener("loadedmetadata", () => {
+  durationEl.textContent = formatTime(audio.duration);
+});
+
+audio.addEventListener("timeupdate", () => {
+  currentTimeEl.textContent = formatTime(audio.currentTime);
+
+  if (!seeking && Number.isFinite(audio.duration) && audio.duration > 0) {
+    seekBar.value = (audio.currentTime / audio.duration) * 100;
+  }
+});
+
+seekBar.addEventListener("input", () => {
+  seeking = true;
+  if (Number.isFinite(audio.duration)) {
+    currentTimeEl.textContent = formatTime(
+      (Number(seekBar.value) / 100) * audio.duration
+    );
+  }
+});
+
+seekBar.addEventListener("change", () => {
+  if (Number.isFinite(audio.duration)) {
+    audio.currentTime = (Number(seekBar.value) / 100) * audio.duration;
+  }
+  seeking = false;
+});
+
+volumeBar.addEventListener("input", () => {
+  audio.volume = Number(volumeBar.value);
+});
+
+audio.addEventListener("play", () => {
+  playBtn.textContent = "Ⅱ";
+  statusEl.textContent = "ON AIR · REPRODUINT";
+});
+
+audio.addEventListener("pause", () => {
+  playBtn.textContent = "▶";
+});
+
+audio.addEventListener("ended", nextTrack);
+
+audio.addEventListener("error", () => {
+  statusEl.textContent =
+    "No s'ha trobat l'àudio. Revisa el nom i la carpeta del MP3.";
+});
+
+loadTrack(false);
+</script>
+
+</body>
+</html>
